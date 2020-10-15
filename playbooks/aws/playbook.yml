@@ -1,0 +1,54 @@
+---
+
+- hosts: localhost
+  tasks:
+    - name: Create VPC using CloudFormation
+      cloudformation:
+        stack_name: "{{ infrastructure_name }}-vpc"
+        template: "{{ playbook_dir }}/cloudformation/vpc.yaml"
+        template_parameters:
+          InfrastructureName: "{{ infrastructure_name }}"
+          VpcCidr: "{{ vpc_cidr | default(omit) }}"
+          AvailabilityZoneCount: "{{ availability_zone_count | default(omit) }}"
+          SubnetBits: "{{ subnet_bits | default(omit) }}"
+        state: present
+      register: r_cf_vpc
+
+    - name: Debug output for VPC creation
+      debug:
+        var: r_cf_vpc
+
+    - name: Create networking and load balancing components using CloudFormation
+      cloudformation:
+        stack_name: "{{ infrastructure_name }}-network"
+        template: "{{ playbook_dir }}/cloudformation/network.yaml"
+        template_parameters:
+          ClusterName: "{{ cluster_name }}"
+          InfrastructureName: "{{ infrastructure_name }}"
+          HostedZoneId: "{{ hosted_zone_id }}"
+          HostedZoneName: "{{ hosted_zone_name }}"
+          PublicSubnets: "{{ r_cf_vpc.stack_outputs.PublicSubnetIds }}"
+          PrivateSubnets: "{{ r_cf_vpc.stack_outputs.PrivateSubnetIds }}"
+          VpcId: "{{ r_cf_vpc.stack_outputs.VpcId }}"
+        state: present
+      register: r_cf_network
+
+    - name: Debug output for networking and load balancing components creation
+      debug:
+        var: r_cf_network
+
+    - name: Create security components using CloudFormation
+      cloudformation:
+        stack_name: "{{ infrastructure_name }}-security"
+        template: "{{ playbook_dir }}/cloudformation/security.yaml"
+        template_parameters:
+          InfrastructureName: "{{ infrastructure_name }}"
+          VpcCidr: "{{ vpc_cidr | default(omit) }}"
+          VpcId: "{{ r_cf_vpc.stack_outputs.VpcId }}"
+          PrivateSubnets: "{{ r_cf_vpc.stack_outputs.PrivateSubnetIds }}"
+        state: present
+      register: r_cf_security
+
+    - name: Debug output for security components creation
+      debug:
+        var: r_cf_security
