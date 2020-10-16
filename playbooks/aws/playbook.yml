@@ -76,3 +76,30 @@
     - name: Debug output for bootstrap creation
       debug:
         var: r_cf_bootstrap
+
+    - name: Create control plane using CloudFormation
+      cloudformation:
+        stack_name: "{{ infrastructure_name }}-control-plane"
+        template: "{{ playbook_dir }}/cloudformation/control_plane.yaml"
+        template_parameters:
+          InfrastructureName: "{{ infrastructure_name }}"
+          RhcosAmi: "{{ rhcos_ami }}"
+          AutoRegisterELB: "{{ auto_register_elb | default(omit) }}"
+          Master0Subnet: "{{ (r_cf_vpc.stack_outputs.PrivateSubnetIds.split(',')).0 }}"
+          Master1Subnet: "{{ (r_cf_vpc.stack_outputs.PrivateSubnetIds.split(',')).1 }}"
+          Master2Subnet: "{{ (r_cf_vpc.stack_outputs.PrivateSubnetIds.split(',')).2 }}"
+          MasterSecurityGroupId: "{{ r_cf_security.stack_outputs.MasterSecurityGroupId }}"
+          IgnitionLocation: https://api-int.{{ cluster_name }}.{{ base_domain }}:22623/config/master
+          CertificateAuthorities: "{{ ignition_ca }}"
+          MasterInstanceProfileName: "{{ r_cf_security.stack_outputs.MasterInstanceProfile }}"
+          MasterInstanceType: "{{ master_instance_type | default(omit) }}"
+          RegisterNlbIpTargetsLambdaArn: "{{ r_cf_network.stack_outputs.RegisterNlbIpTargetsLambda }}"
+          ExternalApiTargetGroupArn: "{{ r_cf_network.stack_outputs.ExternalApiTargetGroupArn }}"
+          InternalApiTargetGroupArn: "{{ r_cf_network.stack_outputs.InternalApiTargetGroupArn }}"
+          InternalServiceTargetGroupArn: "{{ r_cf_network.stack_outputs.InternalServiceTargetGroupArn }}"
+        state: present
+      register: r_cf_control_plane
+
+    - name: Debug output for control plane creation
+      debug:
+        var: r_cf_control_plane
