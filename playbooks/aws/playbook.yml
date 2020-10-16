@@ -52,3 +52,27 @@
     - name: Debug output for security components creation
       debug:
         var: r_cf_security
+
+    - name: Create bootstrap using CloudFormation
+      cloudformation:
+        stack_name: "{{ infrastructure_name }}-bootstrap"
+        template: "{{ playbook_dir }}/cloudformation/bootstrap.yaml"
+        template_parameters:
+          InfrastructureName: "{{ infrastructure_name }}"
+          RhcosAmi: "{{ rhcos_ami }}"
+          AllowedBootstrapSshCidr: "{{ allowed_bootstrap_ssh_cidr | default(omit) }}"
+          PublicSubnet: "{{ r_cf_vpc.stack_outputs.PublicSubnetIds.split(',') | first }}"
+          MasterSecurityGroupId: "{{ r_cf_security.stack_outputs.MasterSecurityGroupId }}"
+          VpcId: "{{ r_cf_vpc.stack_outputs.VpcId }}"
+          BootstrapIgnitionLocation: "{{ bootstrap_ignition_location }}"
+          AutoRegisterELB: "{{ auto_register_elb | default(omit) }}"
+          RegisterNlbIpTargetsLambdaArn: "{{ r_cf_network.stack_outputs.RegisterNlbIpTargetsLambda }}"
+          ExternalApiTargetGroupArn: "{{ r_cf_network.stack_outputs.ExternalApiTargetGroupArn }}"
+          InternalApiTargetGroupArn: "{{ r_cf_network.stack_outputs.InternalApiTargetGroupArn }}"
+          InternalServiceTargetGroupArn: "{{ r_cf_network.stack_outputs.InternalServiceTargetGroupArn }}"
+        state: present
+      register: r_cf_bootstrap
+
+    - name: Debug output for bootstrap creation
+      debug:
+        var: r_cf_bootstrap
