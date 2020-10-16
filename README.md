@@ -27,6 +27,7 @@ You can find the templates here:
 | Security                 | [original](playbooks/aws/cloudformation/security.original.yaml)      | [modified](playbooks/aws/cloudformation/security.yaml)      |
 | Bootstrap                | [original](playbooks/aws/cloudformation/bootstrap.original.yaml)     | [modified](playbooks/aws/cloudformation/bootstrap.yaml)     |
 | Control Plane            | [original](playbooks/aws/cloudformation/control_plane.original.yaml) | [modified](playbooks/aws/cloudformation/control_plane.yaml) |
+| Worker                   | [original](playbooks/aws/cloudformation/worker.original.yaml)        | [modified](playbooks/aws/cloudformation/worker.yaml)        |
 
 Also included is a playbook that ties each of the CloudFormation templates
 together by matching the outputs of CloudFormation stacks to parameters to
