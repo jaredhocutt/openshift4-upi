@@ -140,7 +140,7 @@ Resources:
           SubnetId: !Ref "Subnet"
       UserData:
         Fn::Base64: !Sub [
-          '{"ignition":{"config":{"append":[{"source":"${Source}","verification":{}}]},"security":{"tls":{"certificateAuthorities":[{"source":"${CaBundle}","verification":{}}]}},"timeouts":{},"version":"2.2.0"},"networkd":{},"passwd":{},"storage":{},"systemd":{}}',
+          '{"ignition":{"config":{"append":[{"source":"${Source}","verification":{}}]},"security":{"tls":{"certificateAuthorities":[{"source":"${CaBundle}","verification":{}}]}},"timeouts":{},"version":"3.1.0"},"networkd":{},"passwd":{},"storage":{},"systemd":{}}',
           {
             Source: !Ref IgnitionLocation,
             CaBundle: !Ref CertificateAuthorities
